@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RESTRICTED ACCESS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+
+        body {
+            background-color: #000;
+            color: #0f0;
+            /* Terminal Green */
+            font-family: 'Courier Prime', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .terminal-container {
+            max-width: 700px;
+            padding: 2.5rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Scanline effect */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 99;
+        }
+
+        #console-output {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            min-height: 150px;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 5px #0f0;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.2rem;
+            background-color: #0f0;
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .choice-container {
+            opacity: 0;
+            /* Hidden initially */
+            transition: opacity 1s;
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            height: 60px;
+            /* Space for wild button */
+            position: relative;
+        }
+
+        button {
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            background: transparent;
+            border: 2px solid #0f0;
+            color: #0f0;
+            font-family: inherit;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            box-shadow: 0 0 10px #0f0 inset, 0 0 10px #0f0;
+            transition: 0.2s;
+            position: relative;
+            /* Changed from absolute to allow layout, then JS handles absolute */
+            z-index: 20;
+        }
+
+        button:hover {
+            background: #0f0;
+            color: #000;
+            box-shadow: 0 0 20px #0f0;
+        }
+
+        #no-btn {
+            border-color: #f00;
+            color: #f00;
+            box-shadow: 0 0 10px #f00 inset, 0 0 10px #f00;
+        }
+
+        #no-btn:hover {
+            background: #f00;
+            color: #000;
+            box-shadow: 0 0 20px #f00;
+        }
+
+        .glitch-text {
+            animation: glitch 0.3s infinite;
+        }
+
+        @keyframes glitch {
+            0% {
+                transform: translate(0)
+            }
+
+            20% {
+                transform: translate(-2px, 2px)
+            }
+
+            40% {
+                transform: translate(-2px, -2px)
+            }
+
+            60% {
+                transform: translate(2px, 2px)
+            }
+
+            80% {
+                transform: translate(2px, -2px)
+            }
+
+            100% {
+                transform: translate(0)
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="terminal-container">
+        <div id="console-output">
+            <span id="typewriter"></span><span class="cursor"></span>
+        </div>
+
+        <div class="choice-container" id="choices">
+            <button id="no-btn">IGNORE</button>
+            <button id="yes-btn">ACCESS</button>
+        </div>
+    </div>
+
+    <script>
+        const textElement = document.getElementById('typewriter');
+        const choiceContainer = document.getElementById('choices');
+        const yesBtn = document.getElementById('yes-btn');
+        const noBtn = document.getElementById('no-btn');
+
+        // The storyline
+        const lines = [
+            "Initializing secure connection...",
+            "Encrypting channel [██████████] 100%",
+            "WARNING: Sensitive emotional data detected.",
+            "This message is intended for your eyes only.",
+            "Do you wish to decrypt the file?"
+        ];
+
+        let lineIndex = 0;
+        let charIndex = 0;
+        let isTyping = true;
+
+        function typeWriter() {
+            if (lineIndex < lines.length) {
+                const currentLine = lines[lineIndex];
+
+                if (charIndex < currentLine.length) {
+                    textElement.innerHTML += currentLine.charAt(charIndex);
+                    charIndex++;
+                    setTimeout(typeWriter, Math.random() * 50 + 30); // Random typing speed
+                } else {
+                    // Line finished
+                    textElement.innerHTML += "<br>";
+                    lineIndex++;
+                    charIndex = 0;
+                    setTimeout(typeWriter, 400); // Pause between lines
+                }
+            } else {
+                // Done typing
+                isTyping = false;
+                showChoices();
+            }
+        }
+
+        function showChoices() {
+            choiceContainer.style.opacity = '1';
+        }
+
+        // Start typing on load
+        setTimeout(typeWriter, 1000); // Initial delay
+
+        // --- Runaway Button Logic ---
+        let attempts = 0;
+        const messages = [
+            "ACCESS",
+            "ARE YOU SURE?",
+            "REALLY?",
+            "LAST CHANCE",
+            "OK FINE"
+        ];
+
+        function moveButton(btn) {
+            // Calculate boundaries (keep it somewhat visible)
+            const x = Math.random() * (window.innerWidth - 150);
+            const y = Math.random() * (window.innerHeight - 100);
+
+            btn.style.position = 'fixed';
+            btn.style.left = Math.max(20, x) + 'px';
+            btn.style.top = Math.max(20, y) + 'px';
+        }
+
+        yesBtn.addEventListener('mouseover', () => {
+            if (attempts < 5) {
+                moveButton(yesBtn);
+                attempts++;
+                yesBtn.textContent = messages[Math.min(attempts, messages.length - 1)];
+                yesBtn.classList.add('glitch-text');
+                setTimeout(() => yesBtn.classList.remove('glitch-text'), 300);
+            } else {
+                yesBtn.style.background = '#0f0';
+                yesBtn.style.color = '#000';
+                yesBtn.textContent = 'OPEN FILE';
+                yesBtn.style.boxShadow = "0 0 30px #0f0";
+            }
+        });
+
+        // Touch support for mobile (tap to run)
+        yesBtn.addEventListener('touchstart', (e) => {
+            if (attempts < 5) {
+                e.preventDefault();
+                moveButton(yesBtn);
+                attempts++;
+            }
+        });
+
+        yesBtn.addEventListener('click', () => {
+            document.body.style.background = '#0f0'; // Flash green
+            document.body.innerHTML = '';
+            setTimeout(() => {
+                window.location.href = 'main.html';
+            }, 300);
+        });
+
+        noBtn.addEventListener('click', () => {
+            textElement.innerHTML += "<br><span style='color:#f00'>Error: Curiosity is mandatory. System Rebooting...</span>";
+            noBtn.style.display = 'none';
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        });
+
+    </script>
+</body>
+
+</html>

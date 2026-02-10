@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>From My Heart to Yours</title>
+    <link rel="stylesheet" href="style.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Poppins:wght@300;400;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="envelope-active">
+    <div class="hearts-container" id="heartsContainer"></div>
+
+    <!-- ENVELOPE OPENING ANIMATION -->
+    <div class="envelope-wrapper" id="envelopeWrapper">
+        <div class="instruction-text">Hold to Unlock My Heart</div>
+        <div class="progress-ring-container">
+            <svg class="progress-ring" width="120" height="120">
+                <circle class="progress-ring__circle" stroke="white" stroke-width="4" fill="transparent" r="52" cx="60"
+                    cy="60" />
+            </svg>
+            <div class="wax-seal" id="sealBtn">
+                <span>❤️</span>
+            </div>
+        </div>
+
+        <div class="envelope">
+            <div class="front-flap"></div>
+            <div class="front-pocket"></div>
+            <div class="letter-preview">
+                <div class="letter-corner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT (Initially Hidden) -->
+    <div class="main-wrapper hidden" id="mainWrapper">
+        <header>
+            <div class="header-icon">💌</div>
+            <h1>A Confession For You</h1>
+            <p>Some things show heavily on my heart...</p>
+        </header>
+
+        <main>
+            <section class="feed-section">
+                <h3><span class="divider-line"></span> My Message <span class="divider-line"></span></h3>
+                <div id="confessionsList" class="loading">Loading messages...</div>
+            </section>
+
+            <!-- REPLY SECTION -->
+            <section class="card reply-card">
+                <h2>Do you accept my feelings?</h2>
+                <div class="reply-buttons">
+                    <button id="btnYes" class="btn-answer btn-yes">YES, I DO! 💖</button>
+                    <button id="btnNo" class="btn-answer btn-no">NO 😢</button>
+                </div>
+            </section>
+
+            <section class="card compose-card hidden-form">
+                <form id="confessionForm">
+                    <div class="form-group">
+                        <label for="confessionText">Reply with a message...</label>
+                        <textarea id="confessionText" placeholder="Write your heartfelt reply here..."
+                            required></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <input type="text" id="authorName" placeholder="Your Name">
+                        </div>
+                        <button type="submit" class="btn-primary">
+                            <span>Send Reply</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path
+                                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+        </main>
+
+        <footer>
+            <p>Made with ❤️ for someone special</p>
+        </footer>
+    </div>
+
+    <!-- Celebration Overlay -->
+    <div id="celebration" class="celebration-overlay hidden">
+        <div class="celebration-content">
+            <h1>YAY! ❤️</h1>
+            <p>You've made me the happiest person alive!</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
