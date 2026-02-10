@@ -37,28 +37,37 @@ try {
 }
 
 const loadConfessions = () => {
-    if (useMemory) return inMemoryConfessions;
+    try {
+        if (useMemory) return inMemoryConfessions;
 
-    // 1. Try reading from /tmp (most recent data in this container)
-    if (fs.existsSync(TMP_FILE)) {
+        // 1. Try reading from /tmp (recent data in serverless)
         try {
-            const data = fs.readFileSync(TMP_FILE, 'utf8');
-            if (data) return JSON.parse(data);
-        } catch (e) { console.error("Error reading TMP:", e); }
-    }
-
-    // 2. Fallback: Try reading local file (for local dev dev updates)
-    if (fs.existsSync(DATA_FILE)) {
-        try {
-            const data = fs.readFileSync(DATA_FILE, 'utf8');
-            if (data) return JSON.parse(data);
+            if (fs.existsSync(TMP_FILE)) {
+                const data = fs.readFileSync(TMP_FILE, 'utf8');
+                if (data) return JSON.parse(data);
+            }
         } catch (e) {
-            console.error("Error reading DATA file, falling back to require:", e);
+            console.error("Accessing TMP failed:", e);
         }
-    }
 
-    // 3. Ultimate Fallback: The data bundled with the app
-    return initialData || [];
+        // 2. Fallback: Try reading local file (for local dev)
+        // On Vercel, this file might not be accessible via fs, so we catch aggressively
+        try {
+            if (fs.existsSync(DATA_FILE)) {
+                const data = fs.readFileSync(DATA_FILE, 'utf8');
+                if (data) return JSON.parse(data);
+            }
+        } catch (e) {
+            console.warn("Read local file failed (expected on Vercel):", e);
+        }
+
+        // 3. Ultimate Fallback: The bundled data
+        // Return a DEEP COPY to prevent mutation issues
+        return JSON.parse(JSON.stringify(initialData || []));
+    } catch (criticalError) {
+        console.error("Critical error in loadConfessions:", criticalError);
+        return []; // Always return an array to prevent crashes
+    }
 };
 
 const saveConfessions = (confessions) => {
@@ -80,9 +89,14 @@ const saveConfessions = (confessions) => {
 
 // GET all confessions
 app.get('/api/confessions', (req, res) => {
-    const confessions = loadConfessions();
-    // Use slice() to create a copy before reversing to avoid mutating the source
-    res.json(confessions.slice().reverse());
+    try {
+        const confessions = loadConfessions();
+        // Use slice() to create a copy before reversing to avoid mutating the source
+        res.json(confessions.slice().reverse());
+    } catch (e) {
+        console.error("GET /api/confessions ERROR:", e);
+        res.status(500).json({ error: "Server Error", details: e.toString() });
+    }
 });
 
 // POST a new confession
