@@ -37,36 +37,43 @@ try {
 }
 
 const loadConfessions = () => {
+    let data = [];
     try {
         if (useMemory) return inMemoryConfessions;
 
         // 1. Try reading from /tmp (recent data in serverless)
         try {
             if (fs.existsSync(TMP_FILE)) {
-                const data = fs.readFileSync(TMP_FILE, 'utf8');
-                if (data) return JSON.parse(data);
+                const tmpData = fs.readFileSync(TMP_FILE, 'utf8');
+                if (tmpData) {
+                    const parsed = JSON.parse(tmpData);
+                    if (Array.isArray(parsed)) return parsed;
+                }
             }
         } catch (e) {
             console.error("Accessing TMP failed:", e);
         }
 
         // 2. Fallback: Try reading local file (for local dev)
-        // On Vercel, this file might not be accessible via fs, so we catch aggressively
+        // Prefer __dirname in Vercel environment for relative assets
+        const localPath = path.join(__dirname, 'confessions.json');
         try {
-            if (fs.existsSync(DATA_FILE)) {
-                const data = fs.readFileSync(DATA_FILE, 'utf8');
-                if (data) return JSON.parse(data);
+            if (fs.existsSync(localPath)) {
+                const localData = fs.readFileSync(localPath, 'utf8');
+                if (localData) {
+                    const parsed = JSON.parse(localData);
+                    if (Array.isArray(parsed)) return parsed;
+                }
             }
         } catch (e) {
-            console.warn("Read local file failed (expected on Vercel):", e);
+            console.warn("Read local file failed:", e);
         }
 
         // 3. Ultimate Fallback: The bundled data
-        // Return a DEEP COPY to prevent mutation issues
-        return JSON.parse(JSON.stringify(initialData || []));
+        return Array.isArray(initialData) ? JSON.parse(JSON.stringify(initialData)) : [];
     } catch (criticalError) {
         console.error("Critical error in loadConfessions:", criticalError);
-        return []; // Always return an array to prevent crashes
+        return [];
     }
 };
 
