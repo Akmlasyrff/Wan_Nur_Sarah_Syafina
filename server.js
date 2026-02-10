@@ -28,24 +28,37 @@ app.get('/', (req, res) => {
 });
 
 // Helper to get data safely
+// Load initial data at startup to ensure it's bundled by Vercel
+let initialData = [];
+try {
+    initialData = require('./confessions.json');
+} catch (e) {
+    console.warn("Could not require confessions.json:", e);
+}
+
 const loadConfessions = () => {
     if (useMemory) return inMemoryConfessions;
 
     // 1. Try reading from /tmp (most recent data in this container)
     if (fs.existsSync(TMP_FILE)) {
         try {
-            return JSON.parse(fs.readFileSync(TMP_FILE));
+            const data = fs.readFileSync(TMP_FILE, 'utf8');
+            if (data) return JSON.parse(data);
         } catch (e) { console.error("Error reading TMP:", e); }
     }
 
-    // 2. Fallback to included file (initial data)
+    // 2. Fallback: Try reading local file (for local dev dev updates)
     if (fs.existsSync(DATA_FILE)) {
         try {
-            return JSON.parse(fs.readFileSync(DATA_FILE));
-        } catch (e) { console.error("Error reading DATA:", e); }
+             const data = fs.readFileSync(DATA_FILE, 'utf8');
+             if (data) return JSON.parse(data);
+        } catch (e) {
+            console.error("Error reading DATA file, falling back to require:", e);
+        }
     }
 
-    return [];
+    // 3. Ultimate Fallback: The data bundled with the app
+    return initialData || [];
 };
 
 const saveConfessions = (confessions) => {

@@ -215,7 +215,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const confessions = await response.json();
                 renderConfessions(confessions);
             } catch (error) {
-                // Silent fail
+                console.error("Fetch error:", error);
+                confessionsList.innerHTML = `
+                    <div style="text-align:center; padding: 2rem; color: #ff6b6b;">
+                        <p>Failed to load messages.</p>
+                        <button onclick="location.reload()" style="margin-top:1rem; padding:0.5rem 1rem; border:none; background:#ff4d6d; color:white; border-radius:5px; cursor:pointer;">Retry</button>
+                    </div>`;
             }
         }
 
