@@ -225,16 +225,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function renderConfessions(confessions) {
+            // Filter out the main "Author" confession (ID 1) since we hardcoded it
+            const replies = confessions.filter(c => c.id !== '1' && c.author !== 'Your Secret Admirer');
+
             confessionsList.innerHTML = '';
-            if (confessions.length === 0) {
+            if (replies.length === 0) {
                 confessionsList.innerHTML = `
                     <div style="text-align:center; padding: 2rem; color: #aaa;">
-                        <p>No messages yet.</p>
+                        <p>No replies yet.</p>
                     </div>`;
                 return;
             }
 
-            confessions.forEach((confession, index) => {
+            replies.forEach((confession, index) => {
                 const card = document.createElement('div');
                 card.className = 'confession-card';
                 card.style.animationDelay = `${index * 0.1}s`;

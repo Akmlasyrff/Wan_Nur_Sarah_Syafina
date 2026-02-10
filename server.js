@@ -88,9 +88,9 @@ const saveConfessions = (confessions) => {
         fs.writeFileSync(TMP_FILE, JSON.stringify(confessions, null, 2));
     } catch (e) {
         console.error("Could not write to /tmp:", e);
-        // Fallback to memory
         useMemory = true;
         inMemoryConfessions = confessions;
+        console.warn("Writing to disk failed. Using in-memory storage. Data will be lost on restart.");
     }
 };
 
