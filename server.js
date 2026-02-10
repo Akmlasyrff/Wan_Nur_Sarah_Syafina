@@ -6,30 +6,63 @@ const path = require('path');
 
 const app = express();
 const PORT = 3000;
-// Use process.cwd() for Vercel, and check /tmp for writable path
+
+// Vercel only allows writing to /tmp
 const DATA_FILE = path.join(process.cwd(), 'confessions.json');
 const TMP_FILE = path.join('/tmp', 'confessions.json');
-
-app.use(cors());
-app.use(bodyParser.json());
-app.use(express.static('public'));
 
 // Fallback to in-memory if file system is read-only (like Vercel)
 let inMemoryConfessions = [];
 let useMemory = false;
 
-// Load confessions
+app.use(cors());
+app.use(bodyParser.json());
+
+// Resolve public folder safely for Vercel
+const PUBLIC_DIR = path.join(process.cwd(), 'public');
+app.use(express.static(PUBLIC_DIR));
+
+// Explicitly serve index.html for root
+app.get('/', (req, res) => {
+    res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
+});
+
+// Helper to get data safely
 const loadConfessions = () => {
-    if (!fs.existsSync(DATA_FILE)) {
-        return [];
+    if (useMemory) return inMemoryConfessions;
+
+    // 1. Try reading from /tmp (most recent data in this container)
+    if (fs.existsSync(TMP_FILE)) {
+        try {
+            return JSON.parse(fs.readFileSync(TMP_FILE));
+        } catch (e) { console.error("Error reading TMP:", e); }
     }
-    const data = fs.readFileSync(DATA_FILE);
-    return JSON.parse(data);
+
+    // 2. Fallback to included file (initial data)
+    if (fs.existsSync(DATA_FILE)) {
+        try {
+            return JSON.parse(fs.readFileSync(DATA_FILE));
+        } catch (e) { console.error("Error reading DATA:", e); }
+    }
+
+    return [];
 };
 
-// Save confessions
 const saveConfessions = (confessions) => {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(confessions, null, 2));
+    if (useMemory) {
+        inMemoryConfessions = confessions;
+        return;
+    }
+
+    // Always write to /tmp on Vercel
+    try {
+        fs.writeFileSync(TMP_FILE, JSON.stringify(confessions, null, 2));
+    } catch (e) {
+        console.error("Could not write to /tmp:", e);
+        // Fallback to memory
+        useMemory = true;
+        inMemoryConfessions = confessions;
+    }
 };
 
 // GET all confessions
