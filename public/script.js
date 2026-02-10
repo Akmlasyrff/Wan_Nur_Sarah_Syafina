@@ -241,7 +241,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const text = document.createElement('div');
                 text.className = 'confession-text';
-                text.textContent = confession.text;
+                // Replace newlines with <br> for proper formatting
+                // And wrap in <p> if double newline
+                text.innerHTML = confession.text.replace(/\n/g, '<br>');
 
                 const meta = document.createElement('div');
                 meta.className = 'confession-meta';
