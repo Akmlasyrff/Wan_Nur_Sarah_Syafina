@@ -50,8 +50,8 @@ const loadConfessions = () => {
     // 2. Fallback: Try reading local file (for local dev dev updates)
     if (fs.existsSync(DATA_FILE)) {
         try {
-             const data = fs.readFileSync(DATA_FILE, 'utf8');
-             if (data) return JSON.parse(data);
+            const data = fs.readFileSync(DATA_FILE, 'utf8');
+            if (data) return JSON.parse(data);
         } catch (e) {
             console.error("Error reading DATA file, falling back to require:", e);
         }
@@ -81,7 +81,8 @@ const saveConfessions = (confessions) => {
 // GET all confessions
 app.get('/api/confessions', (req, res) => {
     const confessions = loadConfessions();
-    res.json(confessions.reverse()); // Newest first
+    // Use slice() to create a copy before reversing to avoid mutating the source
+    res.json(confessions.slice().reverse());
 });
 
 // POST a new confession
